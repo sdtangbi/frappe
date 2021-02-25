@@ -15,6 +15,7 @@ import frappe
 from frappe.utils.minify import JavascriptMinify
 
 import click
+from requests import get
 from six import iteritems, text_type
 from six.moves.urllib.parse import urlparse
 
@@ -25,8 +26,6 @@ sites_path = os.path.abspath(os.getcwd())
 
 
 def download_file(url, prefix):
-	from requests import get
-
 	filename = urlparse(url).path.split("/")[-1]
 	local_filename = os.path.join(prefix, filename)
 	with get(url, stream=True, allow_redirects=True) as r:

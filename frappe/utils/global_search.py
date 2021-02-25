@@ -8,6 +8,7 @@ import re
 import redis
 import json
 import os
+from bs4 import BeautifulSoup
 from frappe.utils import cint, strip_html_tags
 from frappe.utils.html_utils import unescape_html
 from frappe.model.base_document import get_controller
@@ -309,7 +310,6 @@ def get_routes_to_index():
 
 
 def add_route_to_global_search(route):
-	from bs4 import BeautifulSoup
 	from frappe.website.render import render_page
 	from frappe.utils import set_request
 	frappe.set_user('Guest')

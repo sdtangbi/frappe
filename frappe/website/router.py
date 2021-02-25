@@ -7,6 +7,8 @@ import io
 import os
 import re
 
+import yaml
+
 import frappe
 from frappe.model.document import get_controller
 from frappe.website.utils import can_cache, delete_page_cache, extract_comment_tag, extract_title
@@ -281,7 +283,6 @@ def get_frontmatter(string):
 	"""
 	Reference: https://github.com/jonbeebe/frontmatter
 	"""
-	import yaml
 
 	fmatter = ""
 	body = ""

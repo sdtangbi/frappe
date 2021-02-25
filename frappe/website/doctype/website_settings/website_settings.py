@@ -2,6 +2,7 @@
 # MIT License. See license.txt
 
 from __future__ import unicode_literals
+import requests
 import frappe
 from frappe import _
 from frappe.utils import get_request_site_address, encode
@@ -76,8 +77,6 @@ class WebsiteSettings(Document):
 		frappe.clear_cache()
 
 	def get_access_token(self):
-		import requests
-
 		google_settings = frappe.get_doc("Google Settings")
 
 		if not google_settings.enable:

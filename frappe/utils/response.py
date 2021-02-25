@@ -17,6 +17,7 @@ from werkzeug.local import LocalProxy
 from werkzeug.wsgi import wrap_file
 from werkzeug.wrappers import Response
 from werkzeug.exceptions import NotFound, Forbidden
+from frappe.website.render import render
 from frappe.utils import cint
 from six import text_type
 from six.moves.urllib.parse import quote
@@ -149,7 +150,6 @@ def json_handler(obj):
 
 def as_page():
 	"""print web page"""
-	from frappe.website.render import render
 	return render(frappe.response['route'], http_status_code=frappe.response.get("http_status_code"))
 
 def redirect():
