@@ -42,7 +42,7 @@ $.extend(frappe.perm, {
 	},
 
 	get_perm: (doctype, doc) => {
-		let perm = [{ read: 0, permlevel: 0 }];
+		let perm = [{ read: 0 }];
 
 		let meta = frappe.get_doc("DocType", doctype);
 		const user  = frappe.session.user;
@@ -53,7 +53,7 @@ $.extend(frappe.perm, {
 
 		if (!meta) return perm;
 
-		perm = frappe.perm.get_role_permissions(meta);
+		frappe.perm.build_role_permissions(perm, meta);
 
 		if (doc) {
 			// apply user permissions via docinfo (which is processed server-side)
@@ -107,30 +107,35 @@ $.extend(frappe.perm, {
 		return perm;
 	},
 
-	get_role_permissions: (meta) => {
-		let perm = [{ read: 0, permlevel: 0 }];
+	build_role_permissions: (perm, meta) => {
 		// Returns a `dict` of evaluated Role Permissions
-		(meta.permissions || []).forEach(p => {
+		$.each(meta.permissions || [], (i, p) => {
 			// if user has this role
-			let permlevel = cint(p.permlevel);
-			if (!perm[permlevel]) {
-				perm[permlevel] = {};
-				perm[permlevel]["permlevel"] = permlevel;
-			}
-
 			if (frappe.user_roles.includes(p.role)) {
-				frappe.perm.rights.forEach(right => {
-					let value = perm[permlevel][right] || (p[right] || 0);
-					if (value) {
-						perm[permlevel][right] = value;
-					}
+				let permlevel = cint(p.permlevel);
+				if (!perm[permlevel]) {
+					perm[permlevel] = {};
+					perm[permlevel]["permlevel"] = permlevel
+				}
+
+				$.each(frappe.perm.rights, (i, key) => {
+					perm[permlevel][key] = perm[permlevel][key] || (p[key] || 0);
 				});
 			}
 		});
 
-		// fill gaps with empty object
-		perm = perm.map(p => p || {});
-		return perm;
+		// remove values with 0
+		$.each(perm[0], (key, val) => {
+			if (!val) {
+				delete perm[0][key];
+			}
+		});
+
+		$.each(perm, (i, v) => {
+			if (v === undefined) {
+				perm[i] = {};
+			}
+		});
 	},
 
 	get_match_rules: (doctype, ptype) => {

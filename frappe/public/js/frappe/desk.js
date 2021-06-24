@@ -171,17 +171,15 @@ frappe.Application = Class.extend({
 
 	email_password_prompt: function(email_account,user,i) {
 		var me = this;
-		let d = new frappe.ui.Dialog({
-			title: __('Password missing in Email Account'),
+		var d = new frappe.ui.Dialog({
+			title: __('Email Account setup please enter your password for: '+email_account[i]["email_id"]),
 			fields: [
-				{
-					'fieldname': 'password',
+				{	'fieldname': 'password',
 					'fieldtype': 'Password',
-					'label': __('Please enter the password for: <b>{0}</b>', [email_account[i]["email_id"]]),
+					'label': 'Email Account Password',
 					'reqd': 1
 				},
 				{
-					"fieldname": "submit",
 					"fieldtype": "Button",
 					"label": __("Submit")
 				}

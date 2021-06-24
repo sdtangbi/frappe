@@ -28,8 +28,6 @@ frappe.views.ListView = class ListView extends frappe.views.BaseList {
 	}
 
 	show() {
-		this.parent.disable_scroll_to_top = true;
-
 		if (!this.has_permissions()) {
 			frappe.set_route('');
 			frappe.msgprint(__(`Not permitted to view ${this.doctype}`));
@@ -602,7 +600,7 @@ frappe.views.ListView = class ListView extends frappe.views.BaseList {
 			}
 
 			return `<span class="ellipsis"
-				title="${__(label)}: ${frappe.utils.escape_html(_value)}">
+				title="${__(label)}: ${escape(_value)}">
 				${html}
 			</span>`;
 		};
@@ -688,10 +686,26 @@ frappe.views.ListView = class ListView extends frappe.views.BaseList {
 		let current_count = this.data.length;
 		let count_without_children = this.data.uniqBy(d => d.name).length;
 
-		return frappe.db.count(this.doctype, {
-			filters: this.get_filters_for_args()
-		}).then(total_count => {
-			this.total_count = total_count || current_count;
+		const filters = this.get_filters_for_args();
+		const with_child_table_filter = filters.some(filter => {
+			return filter[0] !== this.doctype;
+		});
+
+		const fields = [
+			// cannot break this line as it adds extra \n's and \t's which breaks the query
+			`count(${with_child_table_filter ? 'distinct': ''}${frappe.model.get_full_column_name('name', this.doctype)}) AS total_count`
+		];
+
+		return frappe.call({
+			type: 'GET',
+			method: this.method,
+			args: {
+				doctype: this.doctype,
+				filters,
+				fields,
+			}
+		}).then(r => {
+			this.total_count = r.message.values[0][0] || current_count;
 			let str = __('{0} of {1}', [current_count, this.total_count]);
 			if (count_without_children !== current_count) {
 				str = __('{0} of {1} ({2} rows with children)', [count_without_children, this.total_count, current_count]);
@@ -704,17 +718,12 @@ frappe.views.ListView = class ListView extends frappe.views.BaseList {
 		if (this.settings.get_form_link) {
 			return this.settings.get_form_link(doc);
 		}
-		const docname = doc.name.match(/[%'"\s]/)
+
+		const docname = doc.name.match(/[%'"]/)
 			? encodeURIComponent(doc.name)
 			: doc.name;
 
 		return '#Form/' + this.doctype + '/' + docname;
-	}
-
-	get_seen_class(doc) {
-		return JSON.parse(doc._seen || '[]').includes(frappe.session.user)
-			? ''
-			: 'bold';
 	}
 
 	get_subject_html(doc) {
@@ -728,7 +737,8 @@ frappe.views.ListView = class ListView extends frappe.views.BaseList {
 		let heart_class = liked_by.includes(user) ?
 			'liked-by' : 'text-extra-muted not-liked';
 
-		const seen = this.get_seen_class(doc);
+		const seen = JSON.parse(doc._seen || '[]')
+			.includes(user) ? '' : 'bold';
 
 		let subject_html = `
 			<input class="level-item list-row-checkbox hidden-xs" type="checkbox" data-name="${escape(doc.name)}">
@@ -1078,7 +1088,7 @@ frappe.views.ListView = class ListView extends frappe.views.BaseList {
 					});
 					this.toggle_result_area();
 					this.render_list();
-					if (this.$checks && this.$checks.length) {
+					if (this.$checks.length) {
 						this.set_rows_as_checked();
 					}
 				});

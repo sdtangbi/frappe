@@ -152,12 +152,11 @@ frappe.ui.form.Toolbar = Class.extend({
 		return this.page.add_dropdown(label);
 	},
 	set_indicator: function() {
-		var indicator = frappe.get_indicator(this.frm.doc);
+		if(this.frm.save_disabled)
+			return;
 
-		if (indicator) {
-			if (this.frm.save_disabled && [__('Saved'), __('Not Saved')].includes(indicator[0])) {
-				return;
-			}
+		var indicator = frappe.get_indicator(this.frm.doc);
+		if(indicator) {
 			this.page.set_indicator(indicator[0], indicator[1]);
 		} else {
 			this.page.clear_indicator();
@@ -238,6 +237,13 @@ frappe.ui.form.Toolbar = Class.extend({
 				shortcut: 'Shift+Ctrl+D',
 				condition: () => !this.frm.is_new()
 			});
+		}
+
+		// Cancel Document, added by SHIV on 2020/09/19
+		if((cint(me.frm.doc.docstatus) == 0) && !me.frm.doc.__islocal) {
+			this.page.add_menu_item(__("Cancel Document"), function() {
+				me.frm.canceldraft();
+			}, true);
 		}
 
 		if (frappe.user_roles.includes("System Manager") && me.frm.meta.issingle === 0) {
@@ -347,28 +353,23 @@ frappe.ui.form.Toolbar = Class.extend({
 
 		var status = this.get_action_status();
 		if (status) {
-			// When moving from a page with status amend to another page with status amend
-			// We need to check if document is already amend specifically and hide
-			// or clear the menu actions accordingly
-
-			if (status !== this.current_status && status === 'Amend') {
-				let doc = this.frm.doc;
-				frappe.xcall('frappe.client.is_document_amended', {
-					'doctype': doc.doctype,
-					'docname': doc.name
-				}).then(is_amended => {
-					if (is_amended) {
-						this.page.clear_actions();
-						return;
-					}
+			if (status !== this.current_status) {
+				if (status === 'Amend') {
+					let doc = this.frm.doc;
+					frappe.xcall('frappe.client.is_document_amended', {
+						'doctype': doc.doctype,
+						'docname': doc.name
+					}).then(is_amended => {
+						if (is_amended) return;
+						this.set_page_actions(status);
+					});
+				} else {
 					this.set_page_actions(status);
-				});
-			} else {
-				this.set_page_actions(status);
+				}
 			}
 		} else {
 			this.page.clear_actions();
-			this.current_status = null;
+			this.current_status = null
 		}
 	},
 	get_action_status: function() {

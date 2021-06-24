@@ -109,10 +109,9 @@ frappe.views.BaseList = class BaseList {
 		this.fields = this.fields.uniqBy(f => f[0] + f[1]);
 	}
 
-	_add_field(fieldname, doctype) {
+	_add_field(fieldname) {
 		if (!fieldname) return;
-
-		if (!doctype) doctype = this.doctype;
+		let doctype = this.doctype;
 
 		if (typeof fieldname === 'object') {
 			// df is passed
@@ -120,8 +119,6 @@ frappe.views.BaseList = class BaseList {
 			fieldname = df.fieldname;
 			doctype = df.parent;
 		}
-
-		if (!this.fields) this.fields = [];
 
 		const is_valid_field = frappe.model.std_fields_list.includes(fieldname)
 			|| frappe.meta.has_field(doctype, fieldname)

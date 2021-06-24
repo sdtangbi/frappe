@@ -84,7 +84,7 @@ frappe.views.Container = Class.extend({
 
 		this.page._route = window.location.hash;
 		$(this.page).trigger('show');
-		!this.page.disable_scroll_to_top && frappe.utils.scroll_to(0);
+		frappe.utils.scroll_to(0);
 		frappe.breadcrumbs.update();
 
 		return this.page;

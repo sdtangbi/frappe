@@ -2,7 +2,7 @@
 
 .hero-and-content {
 	/*background-color: #f5f7fa;*/
-	background-color: #fafbfc;
+	background-color: #0e7be9;
 }
 
 .page-sidebar, #wrap-footer, .page-header {
@@ -95,8 +95,10 @@ p {
 }
 
 .login-content .btn {
-	font-size: 14px;
-	margin-top: 45px;
+    background: #2d7b3c;
+    color: white;
+	/* font-size: 14px;
+	margin-top: 45px; */
 }
 
 .page-card {
@@ -108,11 +110,32 @@ p {
   background-color: #fff;
   box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
 }
+
 .page-card .page-card-head {
-  padding: 10px 15px;
+  font-size: 36px;
+  position: relative;
+  text-align: center;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 300;
+  height: 110px;
+  background: url(/assets/erpnext/images/BOBLogo.jpg) no-repeat center;
+  /* padding: 10px 15px;
   margin: -15px;
   margin-bottom: 15px;
-  border-bottom: 1px solid #d1d8dd;
+  border-bottom: 1px solid #d1d8dd; */
+}
+
+.form-login {
+  max-width: 360px;
+    padding-right: 10px;
+    padding-left: 10px;
+    padding-top: 20px;
+    padding-bottom:20px;
+    margin: 0 auto;
+    border-radius: 5px;
+    background-color: #d6f3df;
 }
 .page-card .page-card-head .indicator {
   color: #36414C;
@@ -122,7 +145,12 @@ p {
   margin: 0 6px 0.5px 0px;
 }
 .page-card .btn {
-  margin-top: 30px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+    font-size: 14px;
+}
+  /* margin-top: 30px; */
 }
 
 .bordered {

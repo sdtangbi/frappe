@@ -114,8 +114,8 @@ export default {
 				{label: "Time", slug: "time", sortable: true},
 			],
 			query: {
-				sort: "duration",
-				order: "desc",
+				sort: "time",
+				order: "asc",
 				filters: {},
 				pagination: {
 					limit: 20,

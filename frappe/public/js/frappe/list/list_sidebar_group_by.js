@@ -22,7 +22,6 @@ frappe.views.ListGroupBy = class ListGroupBy {
 			title: __("Select Filters"),
 			fields: this.get_group_by_dropdown_fields()
 		});
-
 		d.set_primary_action("Save", ({ group_by_fields }) => {
 			frappe.model.user_settings.save(this.doctype, 'group_by_fields', group_by_fields || null);
 			this.group_by_fields = group_by_fields ? ['assigned_to', 'owner', ...group_by_fields] : ['assigned_to', 'owner'];
@@ -30,12 +29,7 @@ frappe.views.ListGroupBy = class ListGroupBy {
 			d.hide();
 		});
 
-		d.$body.prepend(`<div class="filters-search">
-			<input type="text" placeholder="${__('Search')}" data-element="search" class="form-control input-xs">
-		</div>`);
-
-		this.page.sidebar.find(".add-list-group-by a").on("click", () => {
-			frappe.utils.setup_search(d.$body, '.unit-checkbox', '.label-area');
+		this.page.sidebar.find(".add-list-group-by a ").on("click", () => {
 			d.show();
 		});
 	}
@@ -101,13 +95,9 @@ frappe.views.ListGroupBy = class ListGroupBy {
 			this.get_group_by_count(fieldname).then(field_count_list => {
 				if (field_count_list.length) {
 					this.render_dropdown_items(field_count_list, fieldtype, dropdown);
-					frappe.utils.setup_search(dropdown, '.group-by-item', '.group-by-value', 'data-name');
+					this.sidebar.setup_dropdown_search(dropdown, '.group-by-value');
 				} else {
-					dropdown.html(
-						`<div class="list-loading text-center group-by-empty text-muted">
-						${__("No filters found")}
-						</div>`
-					);
+					dropdown.find('.group-by-loading').html(`${__("No filters found")}`);
 				}
 			});
 		});
@@ -175,7 +165,7 @@ frappe.views.ListGroupBy = class ListGroupBy {
 		};
 		let standard_html = `
 			<div class="dropdown-search">
-				<input type="text" placeholder="${__('Search')}" data-element="search" class="dropdown-search-input form-control input-xs">
+				<input type="text" placeholder="${__('Search')}" class="form-control dropdown-search-input input-xs">
 			</div>
 		`;
 

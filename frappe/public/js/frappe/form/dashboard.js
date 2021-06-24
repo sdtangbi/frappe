@@ -35,7 +35,6 @@ frappe.ui.form.Dashboard = Class.extend({
 
 		// clear custom
 		this.wrapper.find('.custom').remove();
-		this.hide();
 	},
 	set_headline: function(html, color) {
 		this.frm.layout.show_message(html, color);
@@ -171,7 +170,7 @@ frappe.ui.form.Dashboard = Class.extend({
 
 		if(this.data.graph) {
 			this.setup_graph();
-			// show = true;
+			show = true;
 		}
 
 		if(show) {
@@ -494,9 +493,6 @@ frappe.ui.form.Dashboard = Class.extend({
 			callback: function(r) {
 				if(r.message) {
 					me.render_graph(r.message);
-					me.show();
-				} else {
-					me.hide();
 				}
 			}
 		});

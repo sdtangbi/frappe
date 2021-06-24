@@ -70,10 +70,7 @@ frappe.form.formatters = {
 
 			if ( decimals.length < 3 || decimals.length < precision ) {
 				const fraction = frappe.model.get_value(":Currency", currency, "fraction_units") || 100; // if not set, minimum 2.
-
-				if (decimals.length < cstr(fraction).length) {
-					precision = cstr(fraction).length - 1;
-				}
+				precision      = cstr(fraction).length - 1;
 			}
 		}
 
