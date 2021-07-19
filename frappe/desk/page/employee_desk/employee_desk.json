@@ -1,0 +1,22 @@
+{
+ "content": null,
+ "creation": "2021-06-24 12:25:19.665490",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2021-06-24 12:25:41.150329",
+ "modified_by": "Administrator",
+ "module": "Desk",
+ "name": "employee-desk",
+ "owner": "Administrator",
+ "page_name": "employee-desk",
+ "roles": [
+  {
+   "role": "All"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0
+}

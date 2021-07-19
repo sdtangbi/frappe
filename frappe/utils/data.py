@@ -3,8 +3,9 @@
 
 from __future__ import unicode_literals
 
+# IMPORTANT: only import safe functions as this module will be included in jinja environment
 import frappe
-from dateutil.parser._parser import ParserError
+import subprocess
 import operator
 import re, datetime, math, time
 import babel.dates
@@ -42,12 +43,8 @@ def getdate(string_date=None):
 
 	if is_invalid_date_string(string_date):
 		return None
-	try:
-		return parser.parse(string_date).date()
-	except ParserError:
-		frappe.throw(frappe._('{} is not a valid date string.').format(
-			frappe.bold(string_date)
-		), title=frappe._('Invalid Date'))
+
+	return parser.parse(string_date).date()
 
 def get_datetime(datetime_str=None):
 	if not datetime_str:
@@ -190,25 +187,8 @@ def get_first_day(dt, d_years=0, d_months=0):
 
 	return datetime.date(year, month + 1, 1)
 
-def get_quarter_start(dt, as_str=False):
-	date = getdate(dt)
-	quarter = (date.month - 1) // 3 + 1
-	first_date_of_quarter = datetime.date(date.year, ((quarter - 1) * 3) + 1, 1)
-	return first_date_of_quarter.strftime(DATE_FORMAT) if as_str else first_date_of_quarter
-
-def get_first_day_of_week(dt, as_str=False):
-	dt = getdate(dt)
-	date = dt - datetime.timedelta(days=dt.weekday())
-	return date.strftime(DATE_FORMAT) if as_str else date
-
-def get_year_start(dt, as_str=False):
-	dt = getdate(dt)
-	date = datetime.date(dt.year, 1, 1)
-	return date.strftime(DATE_FORMAT) if as_str else date
-
-def get_last_day_of_week(dt):
-	dt = get_first_day_of_week(dt)
-	return dt + datetime.timedelta(days=6)
+def get_first_day_of_week(dt):
+	return dt - datetime.timedelta(days=dt.weekday())
 
 def get_last_day(dt):
 	"""
@@ -217,27 +197,6 @@ def get_last_day(dt):
 	"""
 	return get_first_day(dt, 0, 1) + datetime.timedelta(-1)
 
-def get_quarter_ending(date):
-	date = getdate(date)
-
-	# find the earliest quarter ending date that is after
-	# the given date
-	for month in (3, 6, 9, 12):
-		quarter_end_month = getdate('{}-{}-01'.format(date.year, month))
-		quarter_end_date = getdate(get_last_day(quarter_end_month))
-		if date <= quarter_end_date:
-			date = quarter_end_date
-			break
-
-	return date
-
-def get_year_ending(date):
-	''' returns year ending of the given date '''
-
-	# first day of next year (note year starts from 1)
-	date = add_to_date('{}-01-01'.format(date.year), months = 12)
-	# last day of this month
-	return add_to_date(date, days=-1)
 
 def get_time(time_str):
 	if isinstance(time_str, datetime.datetime):
@@ -340,25 +299,24 @@ def flt(s, precision=None):
 
 	return num
 
-def cint(s, default=0):
-	"""Convert to integer
+def get_wkhtmltopdf_version():
+	wkhtmltopdf_version = frappe.cache().hget("wkhtmltopdf_version", None)
 
-		:param s: Number in string or other numeric format.
-		:returns: Converted number in python integer type.
+	if not wkhtmltopdf_version:
+		try:
+			res = subprocess.check_output(["wkhtmltopdf", "--version"])
+			wkhtmltopdf_version = res.decode('utf-8').split(" ")[1]
+			frappe.cache().hset("wkhtmltopdf_version", None, wkhtmltopdf_version)
+		except Exception:
+			pass
 
-		Returns default if input can not be converted to integer.
+	return (wkhtmltopdf_version or '0')
 
-		Examples:
-		>>> cint("100")
-		100
-		>>> cint("a")
-		0
-
-	"""
-	try:
-		return int(float(s))
-	except Exception:
-		return default
+def cint(s):
+	"""Convert to integer"""
+	try: num = int(float(s))
+	except: num = 0
+	return num
 
 def floor(s):
 	"""
@@ -431,7 +389,7 @@ def remainder(numerator, denominator, precision=2):
 	else:
 		_remainder = numerator % denominator
 
-	return flt(_remainder, precision)
+	return flt(_remainder, precision);
 
 def safe_div(numerator, denominator, precision=2):
 	"""
@@ -656,7 +614,7 @@ def is_image(filepath):
 	from mimetypes import guess_type
 
 	# filepath can be https://example.com/bed.jpg?v=129
-	filepath = (filepath or "").split('?')[0]
+	filepath = filepath.split('?')[0]
 	return (guess_type(filepath)[0] or "").startswith("image/")
 
 
@@ -1087,84 +1045,13 @@ def md_to_html(markdown_text):
 
 	return html
 
+def get_source_value(source, key):
+	'''Get value from source (object or dict) based on key'''
+	if isinstance(source, dict):
+		return source.get(key)
+	else:
+		return getattr(source, key)
+
 def is_subset(list_a, list_b):
 	'''Returns whether list_a is a subset of list_b'''
 	return len(list(set(list_a) & set(list_b))) == len(list_a)
-
-def generate_hash(*args, **kwargs):
-	return frappe.generate_hash(*args, **kwargs)
-
-
-
-def guess_date_format(date_string):
-	DATE_FORMATS = [
-		r"%d-%m-%Y",
-		r"%m-%d-%Y",
-		r"%Y-%m-%d",
-		r"%d-%m-%y",
-		r"%m-%d-%y",
-		r"%y-%m-%d",
-		r"%d/%m/%Y",
-		r"%m/%d/%Y",
-		r"%Y/%m/%d",
-		r"%d/%m/%y",
-		r"%m/%d/%y",
-		r"%y/%m/%d",
-		r"%d.%m.%Y",
-		r"%m.%d.%Y",
-		r"%Y.%m.%d",
-		r"%d.%m.%y",
-		r"%m.%d.%y",
-		r"%y.%m.%d",
-		r"%d %b %Y",
-		r"%d %B %Y",
-	]
-
-	TIME_FORMATS = [
-		r"%H:%M:%S.%f",
-		r"%H:%M:%S",
-		r"%H:%M",
-		r"%I:%M:%S.%f %p",
-		r"%I:%M:%S %p",
-		r"%I:%M %p",
-	]
-
-	def _get_date_format(date_str):
-		for f in DATE_FORMATS:
-			try:
-				# if date is parsed without any exception
-				# capture the date format
-				datetime.datetime.strptime(date_str, f)
-				return f
-			except ValueError:
-				pass
-
-	def _get_time_format(time_str):
-		for f in TIME_FORMATS:
-			try:
-				# if time is parsed without any exception
-				# capture the time format
-				datetime.datetime.strptime(time_str, f)
-				return f
-			except ValueError:
-				pass
-
-	date_format = None
-	time_format = None
-	date_string = date_string.strip()
-
-	# check if date format can be guessed
-	date_format = _get_date_format(date_string)
-	if date_format:
-		return date_format
-
-	# date_string doesnt look like date, it can have a time part too
-	# split the date string into date and time parts
-	if " " in date_string:
-		date_str, time_str = date_string.split(" ", 1)
-
-		date_format = _get_date_format(date_str) or ''
-		time_format = _get_time_format(time_str) or ''
-
-		if date_format and time_format:
-			return (date_format + ' ' + time_format).strip()

@@ -1,11 +1,10 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # MIT License. See license.txt
 
-import os
+from __future__ import unicode_literals, print_function
 
-import frappe
-from frappe.core.doctype.data_import.data_import import export_json, import_doc
-
+import frappe, os
+from frappe.core.doctype.data_import.data_import import import_doc, export_json
 
 def sync_fixtures(app=None):
 	"""Import, overwrite fixtures from `[app]/fixtures`"""
@@ -21,14 +20,14 @@ def sync_fixtures(app=None):
 			fixture_files = sorted(os.listdir(frappe.get_app_path(app, "fixtures")))
 			for fname in fixture_files:
 				if fname.endswith(".json") or fname.endswith(".csv"):
-					import_doc(frappe.get_app_path(app, "fixtures", fname))
+					import_doc(frappe.get_app_path(app, "fixtures", fname),
+						ignore_links=True, overwrite=True)
 
 		import_custom_scripts(app)
 
 	frappe.flags.in_fixtures = False
 
 	frappe.db.commit()
-
 
 def import_custom_scripts(app):
 	"""Import custom scripts from `[app]/fixtures/custom_scripts`"""
@@ -45,11 +44,10 @@ def import_custom_scripts(app):
 						custom_script.save()
 					else:
 						frappe.get_doc({
-							"doctype": "Custom Script",
+							"doctype":"Custom Script",
 							"dt": doctype,
 							"script": script
 						}).insert()
-
 
 def export_fixtures(app=None):
 	"""Export fixtures as JSON to `[app]/fixtures`"""

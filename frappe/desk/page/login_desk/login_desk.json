@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2021-06-24 11:40:24.372484",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2021-06-29 15:03:48.196202",
+ "modified_by": "Administrator",
+ "module": "Desk",
+ "name": "login-desk",
+ "owner": "Administrator",
+ "page_name": "login-desk",
+ "roles": [
+  {
+   "role": "All"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": ""
+}
